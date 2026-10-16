@@ -23,9 +23,9 @@ reasoner's coercion layer fails (a known incompatibility with the
 
 MIT License — Copyright (c) 2024 Bhaskar Kaphle.
 """
+
 from __future__ import annotations
 
-import os
 import sys
 from pathlib import Path
 
@@ -34,15 +34,17 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent / "src"))
 
 # Force the correct import order to avoid a circular-import issue.
-import neurosym.core  # noqa: F401
 import pytest  # noqa: E402
+
+import neurosym.core  # noqa: F401
 
 # --- Module-under-test import; skip the whole file if unavailable -----------
 try:
-    from neurosym.reasoning.reasoner import SymbolicReasoner  # type: ignore
-    from neurosym.knowledge.graph import KnowledgeGraph  # type: ignore
+    from neurosym.core.types import ReasoningResult, Rule, Triple  # type: ignore
     from neurosym.knowledge.datalog import DatalogEngine  # type: ignore
-    from neurosym.core.types import Rule, Triple, ReasoningResult  # type: ignore
+    from neurosym.knowledge.graph import KnowledgeGraph  # type: ignore
+    from neurosym.reasoning.reasoner import SymbolicReasoner  # type: ignore
+
     HAS_RS = True
     IMPORT_ERR: str | None = None
 except ImportError as exc:  # pragma: no cover
@@ -88,6 +90,7 @@ def reasoner() -> SymbolicReasoner:
             # If SymbolicReasoner has no load_rules method, register rules
             # individually via add_rule.
             import yaml
+
             with open(BUNDLED_RULES, "r", encoding="utf-8") as fh:
                 data = yaml.safe_load(fh)
             for r in data.get("rules", []):
@@ -107,6 +110,7 @@ def _skip_if_reasoner_broken(exc: Exception) -> None:
 # =============================================================================
 # Construction tests
 # =============================================================================
+
 
 def test_construct_no_args() -> None:
     """1. SymbolicReasoner() with no args constructs and auto-wires a DatalogEngine."""
@@ -137,6 +141,7 @@ def test_construct_with_datalog_and_rules() -> None:
 # =============================================================================
 # reason() tests
 # =============================================================================
+
 
 def test_reason_returns_reasoning_result(reasoner: SymbolicReasoner, kg: KnowledgeGraph) -> None:
     """3. reason() returns a ReasoningResult with answer + proof fields."""
@@ -193,12 +198,8 @@ def test_reason_inferred_fact(reasoner: SymbolicReasoner, kg: KnowledgeGraph) ->
         # keyed by either the bare variable name ("x") or the variable marker
         # ("?x") depending on the reasoner's normaliser — accept either.
         assert any(
-            (
-                b.get("x") == "ex:P1" or b.get("?x") == "ex:P1"
-            )
-            and (
-                b.get("z") == "ex:I1" or b.get("?z") == "ex:I1"
-            )
+            (b.get("x") == "ex:P1" or b.get("?x") == "ex:P1")
+            and (b.get("z") == "ex:I1" or b.get("?z") == "ex:I1")
             for b in answer
             if isinstance(b, dict)
         ), f"expected derived binding ex:P1/ex:I1, got {answer}"
@@ -224,6 +225,7 @@ def test_reason_unknown_fact(reasoner: SymbolicReasoner, kg: KnowledgeGraph) -> 
 # =============================================================================
 # check_consistency() tests
 # =============================================================================
+
 
 def test_check_consistency_pass(reasoner: SymbolicReasoner, kg: KnowledgeGraph) -> None:
     """7. check_consistency() returns True for a consistent ontology."""
@@ -256,6 +258,7 @@ def test_check_consistency_violation(reasoner: SymbolicReasoner, kg: KnowledgeGr
 # =============================================================================
 # subsumes() tests
 # =============================================================================
+
 
 def test_subsumes_reflexive(reasoner: SymbolicReasoner, kg: KnowledgeGraph) -> None:
     """9. subsumes(A, A) is True reflexively."""

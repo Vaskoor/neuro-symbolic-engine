@@ -172,15 +172,9 @@ class Violation(BaseModel):
     """
 
     focus_node: str = Field(description="The node that violated a constraint.")
-    path: Optional[str] = Field(
-        default=None, description="Property path that failed (sh:path)."
-    )
-    value: Optional[str] = Field(
-        default=None, description="Offending value (sh:value)."
-    )
-    constraint: str = Field(
-        description="Constraint component, e.g. 'sh:minCount', 'sh:datatype'."
-    )
+    path: Optional[str] = Field(default=None, description="Property path that failed (sh:path).")
+    value: Optional[str] = Field(default=None, description="Offending value (sh:value).")
+    constraint: str = Field(description="Constraint component, e.g. 'sh:minCount', 'sh:datatype'.")
     message: str = Field(description="Human-readable explanation.")
     severity: str = Field(default="sh:Violation", description="sh:Violation/Warning/Info.")
     shape: Optional[str] = Field(default=None, description="Shape that was evaluated.")

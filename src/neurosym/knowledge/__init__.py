@@ -6,7 +6,7 @@ from __future__ import annotations
 from .datalog import DatalogEngine
 from .graph import KnowledgeGraph
 from .ontology import OntologyBuilder
-from .shacl import SHACLValidator, SH
+from .shacl import SH, SHACLValidator
 
 __all__ = [
     "DatalogEngine",

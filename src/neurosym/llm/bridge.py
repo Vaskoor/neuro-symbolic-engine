@@ -38,7 +38,7 @@ from __future__ import annotations
 
 import os
 import re
-from typing import TYPE_CHECKING, Any, Iterable, Mapping, Optional
+from typing import TYPE_CHECKING, Any, Mapping
 
 try:  # contract from sibling task ns-A
     from neurosym.core.types import (
@@ -57,10 +57,7 @@ except ImportError:  # pragma: no cover - fallback
     from ..reasoning.proof import (  # type: ignore[no-redef]
         ProofStep,
         ProofTrace,
-        Query,
-        QueryType,
         ReasoningResult,
-        Rule,
         Triple,
     )
 
@@ -68,6 +65,7 @@ except ImportError:  # pragma: no cover - fallback
 # breaks the import.
 try:
     import z_ai_web_dev_sdk as _zai_sdk  # type: ignore
+
     _HAS_ZAI_SDK = True
 except Exception:  # pragma: no cover - SDK is optional
     _zai_sdk = None  # type: ignore[assignment]
@@ -75,15 +73,7 @@ except Exception:  # pragma: no cover - SDK is optional
 
 
 if TYPE_CHECKING:  # pragma: no cover
-    from neurosym.core.types import (
-        ProofStep as _ProofStep,
-        ProofTrace as _ProofTrace,
-        Query as _Query,
-        QueryType as _QueryType,
-        ReasoningResult as _ReasoningResult,
-        Rule as _Rule,
-        Triple as _Triple,
-    )
+    pass
 
 
 # ---------------------------------------------------------------------------
@@ -152,14 +142,29 @@ _NL_TEMPLATES: list[tuple[re.Pattern[str], str, str, str]] = [
     (re.compile(r"^who\s+is\s+a\s+(?P<o>.+)$", re.IGNORECASE), "?s", "rdf:type", "?o"),
     # Declarative / "X wrote Y" style.
     (re.compile(r"^(?P<s>.+?)\s+wrote\s+(?P<o>.+)$", re.IGNORECASE), "?s", "ex:authored", "?o"),
-    (re.compile(r"^(?P<o>.+?)\s+was\s+written\s+by\s+(?P<s>.+)$", re.IGNORECASE), "?s", "ex:authored", "?o"),
+    (
+        re.compile(r"^(?P<o>.+?)\s+was\s+written\s+by\s+(?P<s>.+)$", re.IGNORECASE),
+        "?s",
+        "ex:authored",
+        "?o",
+    ),
     (re.compile(r"^(?P<s>.+?)\s+authored\s+(?P<o>.+)$", re.IGNORECASE), "?s", "ex:authored", "?o"),
     (re.compile(r"^(?P<s>.+?)\s+is\s+an?\s+(?P<o>.+)$", re.IGNORECASE), "?s", "rdf:type", "?o"),
     (re.compile(r"^(?P<s>.+?)\s+is\s+a\s+(?P<o>.+)$", re.IGNORECASE), "?s", "rdf:type", "?o"),
     (re.compile(r"^(?P<s>.+?)\s+knows\s+(?P<o>.+)$", re.IGNORECASE), "?s", "ex:knows", "?o"),
     (re.compile(r"^(?P<s>.+?)\s+has\s+(?P<o>.+)$", re.IGNORECASE), "?s", "ex:has", "?o"),
-    (re.compile(r"^(?P<s>.+?)\s+subclass\s+of\s+(?P<o>.+)$", re.IGNORECASE), "?s", "rdfs:subClassOf", "?o"),
-    (re.compile(r"^(?P<s>.+?)\s+subClassOf\s+(?P<o>.+)$", re.IGNORECASE), "?s", "rdfs:subClassOf", "?o"),
+    (
+        re.compile(r"^(?P<s>.+?)\s+subclass\s+of\s+(?P<o>.+)$", re.IGNORECASE),
+        "?s",
+        "rdfs:subClassOf",
+        "?o",
+    ),
+    (
+        re.compile(r"^(?P<s>.+?)\s+subClassOf\s+(?P<o>.+)$", re.IGNORECASE),
+        "?s",
+        "rdfs:subClassOf",
+        "?o",
+    ),
 ]
 
 
@@ -496,7 +501,7 @@ class LLMBridge:
             if len(parts) >= 2:
                 text = parts[1]
                 if text.lower().startswith("sparql"):
-                    text = text[len("sparql"):].lstrip()
+                    text = text[len("sparql") :].lstrip()
         # Sanity check: only return if it looks like SPARQL.
         low = text.lower().strip()
         if low.startswith(("select", "ask", "construct", "describe")):
@@ -570,20 +575,14 @@ class LLMBridge:
         s_term = _render_sparql_term(s)
         p_term = _render_sparql_term(p)
         o_term = _render_sparql_term(o)
-        return (
-            f"SELECT {proj} WHERE {{\n"
-            f"  {s_term} {p_term} {o_term} .\n"
-            f"}}"
-        )
+        return f"SELECT {proj} WHERE {{\n  {s_term} {p_term} {o_term} .\n}}"
 
     def _render_proof_deterministic(self, proof: ProofTrace) -> str:
         """Produce a deterministic NL walk of the proof tree."""
         lines: list[str] = []
         final = getattr(proof, "final_conclusion", None)
         if final is not None:
-            lines.append(
-                f"The conclusion {_triple_str(final)} was reached as follows."
-            )
+            lines.append(f"The conclusion {_triple_str(final)} was reached as follows.")
         else:
             lines.append("The following deduction chain was reached.")
         if not proof.steps:

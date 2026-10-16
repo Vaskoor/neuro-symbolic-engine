@@ -25,9 +25,9 @@ core `neurosym.knowledge.datalog` module is not yet wired.
 
 MIT License — Copyright (c) 2024 Bhaskar Kaphle.
 """
+
 from __future__ import annotations
 
-import os
 import sys
 from pathlib import Path
 
@@ -38,13 +38,15 @@ sys.path.insert(0, str(HERE.parent / "src"))
 # Force the correct import order to avoid the circular-import issue between
 # `neurosym.core.__init__` (which imports `.engine` last) and
 # `neurosym.knowledge.datalog` (which imports `..core.types`).
-import neurosym.core  # noqa: F401
 import pytest  # noqa: E402
+
+import neurosym.core  # noqa: F401
 
 # --- Module-under-test import; skip the whole file if unavailable -----------
 try:
-    from neurosym.knowledge.datalog import DatalogEngine  # type: ignore
     from neurosym.core.types import Rule, Triple  # type: ignore
+    from neurosym.knowledge.datalog import DatalogEngine  # type: ignore
+
     HAS_DL = True
     IMPORT_ERR: str | None = None
 except ImportError as exc:  # pragma: no cover
@@ -85,6 +87,7 @@ def _seed_facts(dl: DatalogEngine, facts: list[tuple[str, str, str]]) -> None:
 # Basic tests
 # =============================================================================
 
+
 def test_fresh_engine_is_empty(dl: DatalogEngine) -> None:
     """1. A newly-constructed DatalogEngine has zero rules and zero facts."""
     assert len(dl.rules) == 0
@@ -94,11 +97,13 @@ def test_fresh_engine_is_empty(dl: DatalogEngine) -> None:
 
 def test_add_rule_fires(dl: DatalogEngine) -> None:
     """2. add_rule() registers a rule that fires on a matching fact set."""
-    dl.add_rule(Rule(
-        name="ancestor",
-        body=[{"s": "?x", "p": "ex:parent", "o": "?y"}],
-        head={"s": "?x", "p": "ex:ancestor", "o": "?y"},
-    ))
+    dl.add_rule(
+        Rule(
+            name="ancestor",
+            body=[{"s": "?x", "p": "ex:parent", "o": "?y"}],
+            head={"s": "?x", "p": "ex:ancestor", "o": "?y"},
+        )
+    )
     _seed_facts(dl, [("ex:Bob", "ex:parent", "ex:Alice")])
     derived = dl.forward_chain()
     assert len(derived) == 1
@@ -107,29 +112,37 @@ def test_add_rule_fires(dl: DatalogEngine) -> None:
 
 def test_forward_chain_basic(dl: DatalogEngine) -> None:
     """3. forward_chain() returns the list of newly-derived triples."""
-    dl.add_rule(Rule(
-        name="uncle",
-        body=[
-            {"s": "?x", "p": "ex:parent", "o": "?y"},
-            {"s": "?y", "p": "ex:brother", "o": "?z"},
+    dl.add_rule(
+        Rule(
+            name="uncle",
+            body=[
+                {"s": "?x", "p": "ex:parent", "o": "?y"},
+                {"s": "?y", "p": "ex:brother", "o": "?z"},
+            ],
+            head={"s": "?x", "p": "ex:uncle", "o": "?z"},
+        )
+    )
+    _seed_facts(
+        dl,
+        [
+            ("ex:Bob", "ex:parent", "ex:Alice"),
+            ("ex:Alice", "ex:brother", "ex:Charlie"),
         ],
-        head={"s": "?x", "p": "ex:uncle", "o": "?z"},
-    ))
-    _seed_facts(dl, [
-        ("ex:Bob", "ex:parent", "ex:Alice"),
-        ("ex:Alice", "ex:brother", "ex:Charlie"),
-    ])
+    )
     derived = dl.forward_chain()
     assert any(t.as_tuple() == ("ex:Bob", "ex:uncle", "ex:Charlie") for t in derived)
 
 
 def test_query_with_variables(dl: DatalogEngine) -> None:
     """4. query(pattern) returns all variable bindings."""
-    _seed_facts(dl, [
-        ("ex:Bob", "ex:knows", "ex:Alice"),
-        ("ex:Bob", "ex:knows", "ex:Carol"),
-        ("ex:Alice", "ex:knows", "ex:Bob"),
-    ])
+    _seed_facts(
+        dl,
+        [
+            ("ex:Bob", "ex:knows", "ex:Alice"),
+            ("ex:Bob", "ex:knows", "ex:Carol"),
+            ("ex:Alice", "ex:knows", "ex:Bob"),
+        ],
+    )
     pattern = {"s": "ex:Bob", "p": "ex:knows", "o": "?y"}
     bindings = dl.query(pattern)
     assert len(bindings) == 2
@@ -140,23 +153,30 @@ def test_query_with_variables(dl: DatalogEngine) -> None:
 def test_fixpoint_convergence_idempotent(dl: DatalogEngine) -> None:
     """5. forward_chain() is idempotent — calling it twice yields the same
     fact set on the second call (no new derivations)."""
-    dl.add_rule(Rule(
-        name="ancestor_tc",
-        body=[
-            {"s": "?x", "p": "ex:parent", "o": "?y"},
-            {"s": "?y", "p": "ex:ancestor", "o": "?z"},
+    dl.add_rule(
+        Rule(
+            name="ancestor_tc",
+            body=[
+                {"s": "?x", "p": "ex:parent", "o": "?y"},
+                {"s": "?y", "p": "ex:ancestor", "o": "?z"},
+            ],
+            head={"s": "?x", "p": "ex:ancestor", "o": "?z"},
+        )
+    )
+    dl.add_rule(
+        Rule(
+            name="ancestor_base",
+            body=[{"s": "?x", "p": "ex:parent", "o": "?y"}],
+            head={"s": "?x", "p": "ex:ancestor", "o": "?y"},
+        )
+    )
+    _seed_facts(
+        dl,
+        [
+            ("ex:Bob", "ex:parent", "ex:Alice"),
+            ("ex:Alice", "ex:parent", "ex:Carol"),
         ],
-        head={"s": "?x", "p": "ex:ancestor", "o": "?z"},
-    ))
-    dl.add_rule(Rule(
-        name="ancestor_base",
-        body=[{"s": "?x", "p": "ex:parent", "o": "?y"}],
-        head={"s": "?x", "p": "ex:ancestor", "o": "?y"},
-    ))
-    _seed_facts(dl, [
-        ("ex:Bob", "ex:parent", "ex:Alice"),
-        ("ex:Alice", "ex:parent", "ex:Carol"),
-    ])
+    )
     first = dl.forward_chain()
     n_after_first = len(dl.facts)
     second = dl.forward_chain()
@@ -196,6 +216,7 @@ def test_load_rules_bundled_yaml(dl: DatalogEngine) -> None:
 # expected fact from synthetic instance data.
 # =============================================================================
 
+
 @pytest.fixture
 def dl_with_rules(dl: DatalogEngine) -> DatalogEngine:
     """A DatalogEngine with the bundled rules loaded."""
@@ -212,60 +233,78 @@ def _has_fact(dl: DatalogEngine, s: str, p: str, o: str) -> bool:
 
 def test_rule1_derive_has_institution(dl_with_rules: DatalogEngine) -> None:
     """7. Rule 1: paper X authoredBy R, R affiliatedWith I → X hasInstitution I."""
-    _seed_facts(dl_with_rules, [
-        ("ex:P1", "ex:authoredBy", "ex:R1"),
-        ("ex:R1", "ex:affiliatedWith", "ex:I1"),
-    ])
+    _seed_facts(
+        dl_with_rules,
+        [
+            ("ex:P1", "ex:authoredBy", "ex:R1"),
+            ("ex:R1", "ex:affiliatedWith", "ex:I1"),
+        ],
+    )
     dl_with_rules.forward_chain()
     assert _has_fact(dl_with_rules, "ex:P1", "ex:hasInstitution", "ex:I1")
 
 
 def test_rule2_derive_has_institution_employed(dl_with_rules: DatalogEngine) -> None:
     """8. Rule 2: paper X authoredBy R, R employedBy I → X hasInstitution I."""
-    _seed_facts(dl_with_rules, [
-        ("ex:P2", "ex:authoredBy", "ex:R2"),
-        ("ex:R2", "ex:employedBy", "ex:I2"),
-    ])
+    _seed_facts(
+        dl_with_rules,
+        [
+            ("ex:P2", "ex:authoredBy", "ex:R2"),
+            ("ex:R2", "ex:employedBy", "ex:I2"),
+        ],
+    )
     dl_with_rules.forward_chain()
     assert _has_fact(dl_with_rules, "ex:P2", "ex:hasInstitution", "ex:I2")
 
 
 def test_rule3_derive_indirectly_uses_method(dl_with_rules: DatalogEngine) -> None:
     """9. Rule 3: P3 cites P4, P4 usesMethod M → P3 indirectlyUsesMethod M."""
-    _seed_facts(dl_with_rules, [
-        ("ex:P3", "ex:cites", "ex:P4"),
-        ("ex:P4", "ex:usesMethod", "ex:M1"),
-    ])
+    _seed_facts(
+        dl_with_rules,
+        [
+            ("ex:P3", "ex:cites", "ex:P4"),
+            ("ex:P4", "ex:usesMethod", "ex:M1"),
+        ],
+    )
     dl_with_rules.forward_chain()
     assert _has_fact(dl_with_rules, "ex:P3", "ex:indirectlyUsesMethod", "ex:M1")
 
 
 def test_rule4_derive_researcher_field(dl_with_rules: DatalogEngine) -> None:
     """10. Rule 4: P5 authoredBy R, P5 belongsToField F → R worksInField F."""
-    _seed_facts(dl_with_rules, [
-        ("ex:P5", "ex:authoredBy", "ex:R3"),
-        ("ex:P5", "ex:belongsToField", "ex:F1"),
-    ])
+    _seed_facts(
+        dl_with_rules,
+        [
+            ("ex:P5", "ex:authoredBy", "ex:R3"),
+            ("ex:P5", "ex:belongsToField", "ex:F1"),
+        ],
+    )
     dl_with_rules.forward_chain()
     assert _has_fact(dl_with_rules, "ex:R3", "ex:worksInField", "ex:F1")
 
 
 def test_rule5_derive_method_expert(dl_with_rules: DatalogEngine) -> None:
     """11. Rule 5: P6 authoredBy R, P6 usesMethod M → R knowsMethod M."""
-    _seed_facts(dl_with_rules, [
-        ("ex:P6", "ex:authoredBy", "ex:R4"),
-        ("ex:P6", "ex:usesMethod", "ex:M2"),
-    ])
+    _seed_facts(
+        dl_with_rules,
+        [
+            ("ex:P6", "ex:authoredBy", "ex:R4"),
+            ("ex:P6", "ex:usesMethod", "ex:M2"),
+        ],
+    )
     dl_with_rules.forward_chain()
     assert _has_fact(dl_with_rules, "ex:R4", "ex:knowsMethod", "ex:M2")
 
 
 def test_rule6_derive_high_impact(dl_with_rules: DatalogEngine) -> None:
     """12. Rule 6: P7 publishedIn V, V isTopVenue 'true' → P7 isHighImpact 'true'."""
-    _seed_facts(dl_with_rules, [
-        ("ex:P7", "ex:publishedIn", "ex:V1"),
-        ("ex:V1", "ex:isTopVenue", "true"),
-    ])
+    _seed_facts(
+        dl_with_rules,
+        [
+            ("ex:P7", "ex:publishedIn", "ex:V1"),
+            ("ex:V1", "ex:isTopVenue", "true"),
+        ],
+    )
     dl_with_rules.forward_chain()
     assert _has_fact(dl_with_rules, "ex:P7", "ex:isHighImpact", "true")
 
@@ -275,11 +314,14 @@ def test_rule7_derive_high_impact_researcher(dl_with_rules: DatalogEngine) -> No
 
     Depends on rule 6 firing for P8 first — exercises chained inference.
     """
-    _seed_facts(dl_with_rules, [
-        ("ex:P8", "ex:authoredBy", "ex:R5"),
-        ("ex:P8", "ex:publishedIn", "ex:V2"),
-        ("ex:V2", "ex:isTopVenue", "true"),
-    ])
+    _seed_facts(
+        dl_with_rules,
+        [
+            ("ex:P8", "ex:authoredBy", "ex:R5"),
+            ("ex:P8", "ex:publishedIn", "ex:V2"),
+            ("ex:V2", "ex:isTopVenue", "true"),
+        ],
+    )
     dl_with_rules.forward_chain()
     # First rule 6 derives isHighImpact, then rule 7 derives hasHighImpactPaper.
     assert _has_fact(dl_with_rules, "ex:P8", "ex:isHighImpact", "true")
@@ -292,11 +334,14 @@ def test_rule8_propagate_indirect_method(dl_with_rules: DatalogEngine) -> None:
 
     Exercises transitive propagation across fixpoint iterations.
     """
-    _seed_facts(dl_with_rules, [
-        ("ex:P3", "ex:cites", "ex:P4"),
-        ("ex:P4", "ex:usesMethod", "ex:M1"),
-        ("ex:P9", "ex:cites", "ex:P3"),
-    ])
+    _seed_facts(
+        dl_with_rules,
+        [
+            ("ex:P3", "ex:cites", "ex:P4"),
+            ("ex:P4", "ex:usesMethod", "ex:M1"),
+            ("ex:P9", "ex:cites", "ex:P3"),
+        ],
+    )
     dl_with_rules.forward_chain()
     # Rule 3 derives P3 indirectlyUsesMethod M1, then rule 8 propagates to P9.
     assert _has_fact(dl_with_rules, "ex:P3", "ex:indirectlyUsesMethod", "ex:M1")
@@ -309,13 +354,16 @@ def test_rule9_derive_collaborated(dl_with_rules: DatalogEngine) -> None:
 
     Depends on rule 5 firing for R6 and R7.
     """
-    _seed_facts(dl_with_rules, [
-        ("ex:P10", "ex:authoredBy", "ex:R6"),
-        ("ex:P10", "ex:usesMethod", "ex:M3"),
-        ("ex:P11", "ex:authoredBy", "ex:R7"),
-        ("ex:P11", "ex:usesMethod", "ex:M3"),
-        ("ex:P10", "ex:cites", "ex:P11"),
-    ])
+    _seed_facts(
+        dl_with_rules,
+        [
+            ("ex:P10", "ex:authoredBy", "ex:R6"),
+            ("ex:P10", "ex:usesMethod", "ex:M3"),
+            ("ex:P11", "ex:authoredBy", "ex:R7"),
+            ("ex:P11", "ex:usesMethod", "ex:M3"),
+            ("ex:P10", "ex:cites", "ex:P11"),
+        ],
+    )
     dl_with_rules.forward_chain()
     # Rule 5 derives knowsMethod, then rule 9 derives collaboratedWith.
     assert _has_fact(dl_with_rules, "ex:R6", "ex:knowsMethod", "ex:M3")
@@ -329,11 +377,14 @@ def test_rule10_transitive_cites(dl_with_rules: DatalogEngine) -> None:
     X cites Y, Y cites Z → X cites Z. Verifies the fixpoint produces the
     transitive closure across multiple iterations.
     """
-    _seed_facts(dl_with_rules, [
-        ("ex:A", "ex:cites", "ex:B"),
-        ("ex:B", "ex:cites", "ex:C"),
-        ("ex:C", "ex:cites", "ex:D"),
-    ])
+    _seed_facts(
+        dl_with_rules,
+        [
+            ("ex:A", "ex:cites", "ex:B"),
+            ("ex:B", "ex:cites", "ex:C"),
+            ("ex:C", "ex:cites", "ex:D"),
+        ],
+    )
     dl_with_rules.forward_chain()
     # After fixpoint, A should cite B, C, D; B should cite C, D; C should cite D.
     assert _has_fact(dl_with_rules, "ex:A", "ex:cites", "ex:C")
@@ -343,10 +394,13 @@ def test_rule10_transitive_cites(dl_with_rules: DatalogEngine) -> None:
 
 def test_proof_for_derived_fact(dl_with_rules: DatalogEngine) -> None:
     """17. proof_for(triple) returns the (rule_name, premises) for a derived fact."""
-    _seed_facts(dl_with_rules, [
-        ("ex:P1", "ex:authoredBy", "ex:R1"),
-        ("ex:R1", "ex:affiliatedWith", "ex:I1"),
-    ])
+    _seed_facts(
+        dl_with_rules,
+        [
+            ("ex:P1", "ex:authoredBy", "ex:R1"),
+            ("ex:R1", "ex:affiliatedWith", "ex:I1"),
+        ],
+    )
     dl_with_rules.forward_chain()
     derived = _t("ex:P1", "ex:hasInstitution", "ex:I1")
     proof = dl_with_rules.proof_for(derived)

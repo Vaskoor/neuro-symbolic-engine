@@ -24,6 +24,7 @@ Design notes
 
 MIT License — Copyright (c) 2024 Bhaskar Kaphle.
 """
+
 from __future__ import annotations
 
 import logging
@@ -55,6 +56,7 @@ logger.setLevel(LOG_LEVEL)
 # =============================================================================
 # Request / response models
 # =============================================================================
+
 
 class QueryRequest(BaseModel):
     """Body for `POST /query`."""
@@ -100,6 +102,7 @@ class HealthResponse(BaseModel):
 # Engine wiring (lazy)
 # =============================================================================
 
+
 def _build_engine() -> Any:
     """Construct the NeuroSymbolicEngine with deterministic, env-driven config.
 
@@ -114,8 +117,8 @@ def _build_engine() -> Any:
       * NEUROSYM_OFFLINE    — '1' to disable network (default off)
     """
     # Imported here on purpose — keeps `import neurosym.api.main` cheap.
+    from neurosym.core.config import DatalogConfig, EngineConfig, KGConfig  # type: ignore
     from neurosym.core.engine import NeuroSymbolicEngine  # type: ignore
-    from neurosym.core.config import EngineConfig, KGConfig, DatalogConfig  # type: ignore
 
     ontology = os.environ.get("NEUROSYM_ONTOLOGY", "config/ontology.ttl")
     rules_path = os.environ.get("NEUROSYM_RULES", "config/rules.yaml")
@@ -182,9 +185,8 @@ def _build_query(req: QueryRequest, *, default_type: str = "HYBRID") -> Any:
     params = dict(req.params)
     # If the caller didn't pre-supply a `pattern`/`patterns` and the text
     # looks like a Datalog triple pattern (or NL), parse it on their behalf.
-    is_sparql = (
-        qtype == QueryType.SPARQL
-        or req.text.strip().lower().startswith(("select", "ask", "construct", "describe"))
+    is_sparql = qtype == QueryType.SPARQL or req.text.strip().lower().startswith(
+        ("select", "ask", "construct", "describe")
     )
     if not is_sparql and "pattern" not in params and "patterns" not in params:
         try:
@@ -204,6 +206,7 @@ def _build_query(req: QueryRequest, *, default_type: str = "HYBRID") -> Any:
 # Application factory
 # =============================================================================
 
+
 def create_app() -> FastAPI:
     """Build and return a configured FastAPI application instance."""
 
@@ -211,17 +214,14 @@ def create_app() -> FastAPI:
         title="Neuro-Symbolic Reasoning Engine",
         version="0.1.0",
         description=(
-            "Combining OWL, SHACL, Datalog, GNNs, and LLMs for "
-            "Explainable Knowledge Inference."
+            "Combining OWL, SHACL, Datalog, GNNs, and LLMs for Explainable Knowledge Inference."
         ),
         license_info={"name": "MIT"},
     )
 
     # --- CORS ----------------------------------------------------------------
     cors_origins = [
-        o.strip()
-        for o in os.environ.get("NEUROSYM_CORS_ORIGINS", "*").split(",")
-        if o.strip()
+        o.strip() for o in os.environ.get("NEUROSYM_CORS_ORIGINS", "*").split(",") if o.strip()
     ]
     app.add_middleware(
         CORSMiddleware,
@@ -505,6 +505,7 @@ app: FastAPI = create_app()
 # =============================================================================
 # `python -m neurosym.api.main` entry point (dev convenience)
 # =============================================================================
+
 
 def _main() -> int:
     """Run uvicorn with this module's app (dev mode)."""

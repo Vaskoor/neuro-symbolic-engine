@@ -23,10 +23,10 @@ neural and LLM stages so no external dependencies are required.
 
 MIT License — Copyright (c) 2024 Bhaskar Kaphle.
 """
+
 from __future__ import annotations
 
 import asyncio
-import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -35,14 +35,16 @@ from typing import Any
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent / "src"))
 
-import neurosym.core  # noqa: F401  (correct import order)
 import pytest  # noqa: E402
+
+import neurosym.core  # noqa: F401  (correct import order)
 
 # --- Module-under-test import; skip the whole file if unavailable -----------
 try:
+    from neurosym.core.config import DatalogConfig, EngineConfig, KGConfig  # type: ignore
     from neurosym.core.engine import NeuroSymbolicEngine  # type: ignore
-    from neurosym.core.config import EngineConfig, KGConfig, DatalogConfig  # type: ignore
-    from neurosym.core.types import Query, QueryType, ReasoningResult, Triple, ProofTrace  # type: ignore
+    from neurosym.core.types import ProofTrace, Query, QueryType, ReasoningResult, Triple  # type: ignore
+
     HAS_ENG = True
     IMPORT_ERR: str | None = None
 except ImportError as exc:  # pragma: no cover
@@ -81,6 +83,7 @@ def engine() -> NeuroSymbolicEngine:
 
 
 # --- Mock backends ----------------------------------------------------------
+
 
 class _MockNeuralBackend:
     """Deterministic mock neural backend implementing the NeuralBackend protocol."""
@@ -147,6 +150,7 @@ def _run(coro: Any) -> Any:
 # Construction tests
 # =============================================================================
 
+
 def test_construct_default() -> None:
     """1. NeuroSymbolicEngine() with no args constructs an empty engine."""
     eng = NeuroSymbolicEngine()
@@ -181,6 +185,7 @@ datalog:
 # =============================================================================
 # Cascade tests
 # =============================================================================
+
 
 def test_query_hits_kg(engine: NeuroSymbolicEngine) -> None:
     """3. A SPARQL query against asserted facts hits the KG stage."""
@@ -274,6 +279,7 @@ def test_query_no_backend_answers(engine: NeuroSymbolicEngine) -> None:
 # =============================================================================
 # Proof + latency tests
 # =============================================================================
+
 
 def test_proof_trace_present_on_kg_result(engine: NeuroSymbolicEngine) -> None:
     """8. KG results carry a non-empty ProofTrace."""

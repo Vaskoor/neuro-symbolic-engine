@@ -36,7 +36,7 @@ exposed for the symbolic reasoner's convenience.
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING, Any, Iterable
+from typing import TYPE_CHECKING, Any
 
 try:  # contract from sibling task ns-A
     from neurosym.core.types import Query, QueryType, Triple
@@ -45,13 +45,11 @@ except ImportError:  # pragma: no cover - fallback when ns-A not yet shipped
     # so every reasoning submodule shares structurally-compatible model
     # classes (a Query built here is the same class as one built in proof.py
     # / reasoner.py).
-    from .proof import Query, QueryType, Triple
+    from .proof import Query, QueryType
 
 
 if TYPE_CHECKING:  # pragma: no cover
-    from neurosym.core.types import Query as _Query
-    from neurosym.core.types import QueryType as _QueryType
-    from neurosym.core.types import Triple as _Triple
+    pass
 
 
 # ---------------------------------------------------------------------------
@@ -61,9 +59,7 @@ _VAR_RE = re.compile(r"^[?$](\w+)$")
 _QUOTED_RE = re.compile(r'^"(.*)"$')
 _IRI_RE = re.compile(r"^<(.*)>$")
 
-_PATTERN_SEPARATOR_RE = re.compile(
-    r"\s*(?:\.\s+|\s*,\s*|\s*;\s*|\s+AND\s+|\s+and\s+)\s*"
-)
+_PATTERN_SEPARATOR_RE = re.compile(r"\s*(?:\.\s+|\s*,\s*|\s*;\s*|\s+AND\s+|\s+and\s+)\s*")
 
 
 def is_variable(token: str) -> bool:
@@ -261,12 +257,7 @@ class QueryEngine:
         if cleaned.lower().startswith(("select", "ask", "construct", "describe")):
             return self.parse_sparql(cleaned)
         # Detect NL-ish (single phrase, no variable markers / IRIs / commas)
-        if (
-            "?" not in cleaned
-            and "$" not in cleaned
-            and "<" not in cleaned
-            and "," not in cleaned
-        ):
+        if "?" not in cleaned and "$" not in cleaned and "<" not in cleaned and "," not in cleaned:
             nl = self._match_nl_template(cleaned)
             if nl is not None:
                 return [nl]
@@ -307,11 +298,7 @@ class QueryEngine:
             where_parts.append(f"  {s} {p} {o} .")
         select_clause = " ".join(select_vars) if select_vars else "*"
         where_clause = "\n".join(where_parts)
-        return (
-            f"SELECT {select_clause} WHERE {{\n"
-            f"{where_clause}\n"
-            f"}}"
-        )
+        return f"SELECT {select_clause} WHERE {{\n{where_clause}\n}}"
 
     # ------------------------------------------------------------------
     # convenience / sibling-module helpers

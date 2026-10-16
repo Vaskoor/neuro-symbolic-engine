@@ -74,12 +74,8 @@ class NeuroSymbolicEngine:
         llm: Optional[LLMBackend] = None,
     ) -> None:
         self.config: EngineConfig = config or EngineConfig()
-        self.kg: KnowledgeGraph = kg or KnowledgeGraph(
-            base_namespace=self.config.kg.base_namespace
-        )
-        self.datalog: DatalogEngine = datalog or DatalogEngine(
-            seed=self.config.datalog.seed
-        )
+        self.kg: KnowledgeGraph = kg or KnowledgeGraph(base_namespace=self.config.kg.base_namespace)
+        self.datalog: DatalogEngine = datalog or DatalogEngine(seed=self.config.datalog.seed)
         self.neural: Optional[NeuralBackend] = neural
         self.llm: Optional[LLMBackend] = llm
         self._shacl: Optional[SHACLValidator] = None
@@ -116,10 +112,7 @@ class NeuroSymbolicEngine:
 
         Returns the number of base facts loaded.
         """
-        triples = [
-            Triple(s=row["s"], p=row["p"], o=row["o"])
-            for row in self.kg.get_triples()
-        ]
+        triples = [Triple(s=row["s"], p=row["p"], o=row["o"]) for row in self.kg.get_triples()]
         self.datalog.set_facts(triples)
         return len(triples)
 
@@ -133,7 +126,7 @@ class NeuroSymbolicEngine:
         fully configurable via ``EngineConfig.cascade``.
         """
         t0 = time.perf_counter()
-        for stage in (self.config.cascade or ["kg", "symbolic", "neural", "llm"]):
+        for stage in self.config.cascade or ["kg", "symbolic", "neural", "llm"]:
             stage = stage.lower()
             result: Optional[ReasoningResult] = None
             if stage == "kg":
@@ -307,9 +300,7 @@ class NeuroSymbolicEngine:
         )
 
     @staticmethod
-    def _leaf_proof(
-        triple: Triple, rule_name: str = "kg:lookup"
-    ) -> ProofTrace:
+    def _leaf_proof(triple: Triple, rule_name: str = "kg:lookup") -> ProofTrace:
         step = ProofStep(rule_name=rule_name, premises=[], conclusion=triple)
         return ProofTrace(steps=[step], final_conclusion=triple, depth=1)
 
@@ -349,9 +340,7 @@ class NeuroSymbolicEngine:
         if not self._shacl_initialized:
             shapes_kg: Optional[KnowledgeGraph] = None
             if self.config.shacl.shapes_files:
-                shapes_kg = KnowledgeGraph(
-                    base_namespace=self.config.kg.base_namespace
-                )
+                shapes_kg = KnowledgeGraph(base_namespace=self.config.kg.base_namespace)
                 for f in self.config.shacl.shapes_files:
                     shapes_kg.load_turtle(f)
             self._shacl = SHACLValidator(

@@ -21,9 +21,9 @@ core `neurosym.knowledge.graph` module is not yet wired.
 
 MIT License — Copyright (c) 2024 Bhaskar Kaphle.
 """
+
 from __future__ import annotations
 
-import os
 import sys
 from pathlib import Path
 
@@ -34,13 +34,15 @@ sys.path.insert(0, str(HERE.parent / "src"))
 # Force the correct import order to avoid a circular-import issue between
 # `neurosym.core.__init__` (which imports `.engine` last) and
 # `neurosym.knowledge.datalog` (which imports `..core.types`).
-import neurosym.core  # noqa: F401  (registers the partial package)
 import pytest  # noqa: E402
+
+import neurosym.core  # noqa: F401  (registers the partial package)
 
 # --- Module-under-test import; skip the whole file if unavailable -----------
 try:
-    from neurosym.knowledge.graph import KnowledgeGraph  # type: ignore
     from neurosym.core.types import Triple  # type: ignore
+    from neurosym.knowledge.graph import KnowledgeGraph  # type: ignore
+
     HAS_KG = True
     IMPORT_ERR: str | None = None
 except ImportError as exc:  # pragma: no cover
@@ -100,6 +102,7 @@ ex:Bob a ex:Person .
 # =============================================================================
 # Tests
 # =============================================================================
+
 
 def test_fresh_graph_is_empty(kg: KnowledgeGraph) -> None:
     """1. A newly-constructed KnowledgeGraph has zero triples."""
@@ -220,9 +223,7 @@ def test_sparql_query_count(kg: KnowledgeGraph, synthetic_ttl: Path) -> None:
 def test_to_turtle_roundtrip(kg: KnowledgeGraph, synthetic_ttl: Path, tmp_path: Path) -> None:
     """10. to_turtle() + save_turtle() + load_turtle() round-trips the graph."""
     kg.load_turtle(str(synthetic_ttl))
-    original = sorted(
-        (r["s"], r["p"], r["o"]) for r in kg.get_triples()
-    )
+    original = sorted((r["s"], r["p"], r["o"]) for r in kg.get_triples())
 
     # Round-trip via to_turtle (string) -> save_turtle -> load_turtle.
     serialised = kg.to_turtle()
@@ -233,15 +234,11 @@ def test_to_turtle_roundtrip(kg: KnowledgeGraph, synthetic_ttl: Path, tmp_path: 
     kg2 = KnowledgeGraph()
     kg2.load_turtle(str(roundtrip_path))
 
-    reloaded = sorted(
-        (r["s"], r["p"], r["o"]) for r in kg2.get_triples()
-    )
+    reloaded = sorted((r["s"], r["p"], r["o"]) for r in kg2.get_triples())
     assert reloaded == original
 
 
-def test_count_matches_len_after_adds_and_loads(
-    kg: KnowledgeGraph, synthetic_ttl: Path
-) -> None:
+def test_count_matches_len_after_adds_and_loads(kg: KnowledgeGraph, synthetic_ttl: Path) -> None:
     """11. count() and __len__ agree after a mix of add and load operations."""
     kg.add_triple("ex:Bob", "ex:knows", "ex:Alice")
     kg.add_triple("ex:Bob", "ex:knows", "ex:Carol")

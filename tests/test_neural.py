@@ -25,9 +25,9 @@ neural modules are not yet wired.
 
 MIT License — Copyright (c) 2024 Bhaskar Kaphle.
 """
+
 from __future__ import annotations
 
-import os
 import sys
 from pathlib import Path
 
@@ -35,14 +35,16 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent / "src"))
 
-import neurosym.core  # noqa: F401  (correct import order)
 import numpy as np  # noqa: E402
 import pytest  # noqa: E402
+
+import neurosym.core  # noqa: F401  (correct import order)
 
 # --- Module-under-test import; skip the whole file if unavailable -----------
 try:
     from neurosym.neural.embeddings import TransEEmbedder  # type: ignore
     from neurosym.neural.gnn import GNNLinkPredictor  # type: ignore
+
     HAS_NN = True
     IMPORT_ERR: str | None = None
 except ImportError as exc:  # pragma: no cover
@@ -52,6 +54,7 @@ except ImportError as exc:  # pragma: no cover
 # Detect whether torch is available — used to assert the numpy fallback path.
 try:
     import torch  # type: ignore  # noqa: F401
+
     HAS_TORCH = True
 except ImportError:
     HAS_TORCH = False
@@ -108,6 +111,7 @@ def gnn_numpy_trained(gnn_numpy: GNNLinkPredictor) -> GNNLinkPredictor:
 # =============================================================================
 # TransEEmbedder tests
 # =============================================================================
+
 
 def test_transe_init(transe: TransEEmbedder) -> None:
     """1. TransEEmbedder() constructs with sensible defaults."""
@@ -188,6 +192,7 @@ def test_transe_untrained_score_is_neutral(transe: TransEEmbedder) -> None:
 # =============================================================================
 # GNNLinkPredictor tests (numpy backend)
 # =============================================================================
+
 
 def test_gnn_init_numpy_fallback() -> None:
     """8. GNNLinkPredictor(backend='numpy') constructs without torch."""

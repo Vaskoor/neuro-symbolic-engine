@@ -45,6 +45,7 @@ import numpy as np
 try:  # optional: enables the torch.nn.Module 2-layer GCN backend
     import torch
     from torch import nn as torch_nn
+
     _HAS_TORCH = True
 except Exception:  # pragma: no cover - torch is optional
     torch = None  # type: ignore[assignment]
@@ -58,7 +59,7 @@ except ImportError:  # pragma: no cover - fallback
 
 
 if TYPE_CHECKING:  # pragma: no cover
-    from neurosym.core.types import Triple as _Triple
+    pass
 
 
 # ---------------------------------------------------------------------------
@@ -78,7 +79,11 @@ def _triple_as_spo(triple: Any) -> tuple[str, str, str]:
     if hasattr(triple, "s") and hasattr(triple, "p") and hasattr(triple, "o"):
         return str(getattr(triple, "s")), str(getattr(triple, "p")), str(getattr(triple, "o"))
     if hasattr(triple, "subject") and hasattr(triple, "predicate") and hasattr(triple, "object"):
-        return str(getattr(triple, "subject")), str(getattr(triple, "predicate")), str(getattr(triple, "object"))
+        return (
+            str(getattr(triple, "subject")),
+            str(getattr(triple, "predicate")),
+            str(getattr(triple, "object")),
+        )
     raise TypeError(f"Cannot extract (s, p, o) from {type(triple).__name__!r}")
 
 
@@ -112,12 +117,8 @@ if _HAS_TORCH:
             self.hidden_dim = int(hidden_dim)
             self.embed_dim = int(embed_dim)
             # Learnable initial node features (one-row-per-entity).
-            self.entity_feats = torch_nn.Parameter(
-                torch.zeros(self.n_entities, self.embed_dim)
-            )
-            self.rel_emb = torch_nn.Parameter(
-                torch.zeros(max(self.n_relations, 1), self.embed_dim)
-            )
+            self.entity_feats = torch_nn.Parameter(torch.zeros(self.n_entities, self.embed_dim))
+            self.rel_emb = torch_nn.Parameter(torch.zeros(max(self.n_relations, 1), self.embed_dim))
             # Two GCN layers.
             self.W1 = torch_nn.Parameter(torch.zeros(self.embed_dim, self.hidden_dim))
             self.W2 = torch_nn.Parameter(torch.zeros(self.hidden_dim, self.embed_dim))
@@ -145,7 +146,9 @@ if _HAS_TORCH:
             H2 = self.adj_norm @ H1 @ self.W2
             return H2
 
-        def score(self, s_idx: "torch.Tensor", p_idx: "torch.Tensor", o_idx: "torch.Tensor") -> "torch.Tensor":
+        def score(
+            self, s_idx: "torch.Tensor", p_idx: "torch.Tensor", o_idx: "torch.Tensor"
+        ) -> "torch.Tensor":
             H = self.forward()
             rel = self.rel_emb[p_idx]
             s_emb = H[s_idx]
@@ -300,12 +303,12 @@ class GNNLinkPredictor(_select_base()):  # type: ignore[misc, valid-type]
         m = max(self.n_relations, 1)
         # Xavier-like init scaled for numpy
         limit = np.sqrt(6.0 / (self.embed_dim + self.embed_dim))
-        self._entity_emb = self._np_rng.uniform(
-            -limit, limit, size=(n, self.embed_dim)
-        ).astype(np.float64)
-        self._relation_emb = self._np_rng.uniform(
-            -limit, limit, size=(m, self.embed_dim)
-        ).astype(np.float64)
+        self._entity_emb = self._np_rng.uniform(-limit, limit, size=(n, self.embed_dim)).astype(
+            np.float64
+        )
+        self._relation_emb = self._np_rng.uniform(-limit, limit, size=(m, self.embed_dim)).astype(
+            np.float64
+        )
 
     # ------------------------------------------------------------------
     # training
@@ -403,13 +406,12 @@ class GNNLinkPredictor(_select_base()):  # type: ignore[misc, valid-type]
         assert self._adj_norm_np is not None
 
         n_ent = self.n_entities
-        n_rel = self.n_relations
         pos_idx = [
             (self._entity_to_idx[s], self._relation_to_idx[p], self._entity_to_idx[o])
             for s, p, o in triples
         ]
         # Precompute negative sampling pool
-        all_ent_idx = np.arange(n_ent)
+        np.arange(n_ent)
 
         for epoch in range(int(epochs)):
             # Forward: 2-layer message passing (no nonlinearity in numpy path).
@@ -471,7 +473,7 @@ class GNNLinkPredictor(_select_base()):  # type: ignore[misc, valid-type]
 
             if verbose and (epoch % 10 == 0 or epoch == epochs - 1):
                 avg = total_loss / max(n_examples, 1)
-                print(f"[GNN/numpy] epoch {epoch+1}/{epochs} loss={avg:.4f}", flush=True)
+                print(f"[GNN/numpy] epoch {epoch + 1}/{epochs} loss={avg:.4f}", flush=True)
 
     # ------------------------------------------------------------------
     # torch backend
@@ -533,7 +535,7 @@ class GNNLinkPredictor(_select_base()):  # type: ignore[misc, valid-type]
             loss.backward()  # type: ignore[no-untyped-call]
             optimizer.step()  # type: ignore[no-untyped-call]
             if verbose and (epoch % 10 == 0 or epoch == epochs - 1):
-                print(f"[GNN/torch] epoch {epoch+1}/{epochs} loss={float(loss):.4f}", flush=True)
+                print(f"[GNN/torch] epoch {epoch + 1}/{epochs} loss={float(loss):.4f}", flush=True)
 
     # ------------------------------------------------------------------
     # inference

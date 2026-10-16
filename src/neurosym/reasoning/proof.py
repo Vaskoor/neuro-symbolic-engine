@@ -41,7 +41,7 @@ The firing-log input is normalised defensively — callers may pass any of:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Iterable, Mapping, Sequence
+from typing import TYPE_CHECKING, Any, Iterable, Mapping
 
 try:  # contract from sibling task ns-A
     from neurosym.core.types import (
@@ -55,6 +55,7 @@ try:  # contract from sibling task ns-A
         Triple,
         Violation,
     )
+
     _HAS_CONTRACT = True
 except ImportError:  # pragma: no cover - fallback when ns-A not yet shipped
     _HAS_CONTRACT = False
@@ -193,17 +194,7 @@ except ImportError:  # pragma: no cover - fallback when ns-A not yet shipped
 
 
 if TYPE_CHECKING:  # pragma: no cover
-    from neurosym.core.types import (
-        ProofStep as _ProofStep,
-        ProofTrace as _ProofTrace,
-        Query as _Query,
-        QueryType as _QueryType,
-        ReasoningResult as _ReasoningResult,
-        Rule as _Rule,
-        SourceLabel as _SourceLabel,
-        Triple as _Triple,
-        Violation as _Violation,
-    )
+    pass
 
 
 # ---------------------------------------------------------------------------
@@ -326,10 +317,7 @@ def _extract_rule_and_premises(value: Any) -> tuple[str, list[Triple]]:
             or "rule"
         )
         premises = _coerce_triple_list(
-            value.get("premises")
-            or value.get("antecedents")
-            or value.get("body")
-            or []
+            value.get("premises") or value.get("antecedents") or value.get("body") or []
         )
         return rule_name, premises
     if hasattr(value, "__len__") and len(value) >= 2:  # type: ignore[arg-type]

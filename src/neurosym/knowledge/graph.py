@@ -107,7 +107,7 @@ class KnowledgeGraph:
         for pfx, ns in self._g.namespaces():
             ns_str = str(ns)
             if ns_str and iri.startswith(ns_str):
-                local = iri[len(ns_str):]
+                local = iri[len(ns_str) :]
                 return f"{pfx}:{local}" if pfx else f":{local}"
         return iri
 
@@ -207,7 +207,7 @@ class KnowledgeGraph:
         pn = self._to_predicate(p) if p else None
         on = self._to_object(o) if o else None
         out: list[dict[str, str]] = []
-        for (s_, p_, o_) in self._g.triples((sn, pn, on)):
+        for s_, p_, o_ in self._g.triples((sn, pn, on)):
             out.append(
                 {
                     "s": self._term_to_str(s_),
@@ -222,9 +222,7 @@ class KnowledgeGraph:
         """Convenience accessor: all object strings for ``s p ?``."""
         sn = self._to_subject(s)
         pn = self._to_predicate(p)
-        return sorted(
-            self._term_to_str(o) for o in self._g.objects(sn, pn)
-        )
+        return sorted(self._term_to_str(o) for o in self._g.objects(sn, pn))
 
     def has_triple(
         self,
@@ -261,7 +259,7 @@ class KnowledgeGraph:
         ]
         seen_nodes: dict[str, str] = {}  # label -> shape
         edges: list[str] = []
-        for (s_, p_, o_) in self._g:
+        for s_, p_, o_ in self._g:
             sl = self._term_to_str(s_)
             pl = self._term_to_str(p_)
             ol = self._term_to_str(o_)
@@ -270,12 +268,9 @@ class KnowledgeGraph:
                     shape = "ellipse" if isinstance(term, Literal) else "box"
                     seen_nodes[label] = shape
                     nid = self._dot_id(label)
-                    lines.append(
-                        f'  "{nid}" [label="{self._escape(label)}", shape={shape}];'
-                    )
+                    lines.append(f'  "{nid}" [label="{self._escape(label)}", shape={shape}];')
             edges.append(
-                f'  "{self._dot_id(sl)}" -> "{self._dot_id(ol)}" '
-                f'[label="{self._escape(pl)}"];'
+                f'  "{self._dot_id(sl)}" -> "{self._dot_id(ol)}" [label="{self._escape(pl)}"];'
             )
         lines.extend(edges)
         lines.append("}")

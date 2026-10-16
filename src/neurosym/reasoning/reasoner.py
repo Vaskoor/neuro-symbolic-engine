@@ -45,7 +45,7 @@ from collections import deque
 from typing import TYPE_CHECKING, Any, Iterable, Optional
 
 from .proof import ProofBuilder, format_proof
-from .queries import QueryEngine, is_variable, variable_name
+from .queries import QueryEngine, is_variable
 
 try:  # contract from sibling task ns-A
     from neurosym.core.types import (
@@ -64,18 +64,16 @@ except ImportError:  # pragma: no cover - fallback when ns-A not yet shipped
     # classes (a Triple built in queries.py is the same class as one built
     # in reasoner.py / proof.py).
     from .proof import (
-        ProofStep,
-        ProofTrace,
         Query,
         QueryType,
         ReasoningResult,
         Rule,
-        SourceLabel,
         Triple,
     )
 
 try:  # the DatalogEngine contract from sibling task ns-A
     from neurosym.knowledge.datalog import DatalogEngine as _ContractDatalogEngine
+
     _HAS_DATALOG = True
 except Exception:  # pragma: no cover - fallback when ns-A not yet shipped
     _HAS_DATALOG = False
@@ -83,22 +81,13 @@ except Exception:  # pragma: no cover - fallback when ns-A not yet shipped
 
 try:  # the KnowledgeGraph contract from sibling task ns-A
     from neurosym.knowledge.graph import KnowledgeGraph as _ContractKnowledgeGraph  # noqa: F401
+
     _HAS_KG = True
 except Exception:  # pragma: no cover
     _HAS_KG = False
 
 
 if TYPE_CHECKING:  # pragma: no cover
-    from neurosym.core.types import (
-        ProofStep as _ProofStep,
-        ProofTrace as _ProofTrace,
-        Query as _Query,
-        QueryType as _QueryType,
-        ReasoningResult as _ReasoningResult,
-        Rule as _Rule,
-        SourceLabel as _SourceLabel,
-        Triple as _Triple,
-    )
     from neurosym.knowledge.datalog import DatalogEngine
     from neurosym.knowledge.graph import KnowledgeGraph
 
@@ -645,16 +634,19 @@ class SymbolicReasoner:
         derivations = self._get_derivations()
         base_keys = {t.as_tuple() for t in kg_facts}
         proof = (
-            self._proof_builder.build_trace(
-                derivations, goal=goal_triple, base_facts=base_keys
-            )
+            self._proof_builder.build_trace(derivations, goal=goal_triple, base_facts=base_keys)
             if goal_triple is not None
             else None
         )
 
         # Build the answer payload.
-        if patterns and len(patterns) == 1 and not is_variable(patterns[0].get("s", "")) and \
-                not is_variable(patterns[0].get("p", "")) and not is_variable(patterns[0].get("o", "")):
+        if (
+            patterns
+            and len(patterns) == 1
+            and not is_variable(patterns[0].get("s", ""))
+            and not is_variable(patterns[0].get("p", ""))
+            and not is_variable(patterns[0].get("o", ""))
+        ):
             # Fully-ground pattern — treat as ASK.
             answer: list[dict[str, str]] | str = "true" if bindings_rows else "false"
         else:
@@ -717,7 +709,11 @@ class SymbolicReasoner:
                     _LOG.warning(
                         "Consistency violation: %s is rdf:type %s and rdf:type %s "
                         "while %s owl:disjointWith %s",
-                        entity, a, b, a, b,
+                        entity,
+                        a,
+                        b,
+                        a,
+                        b,
                     )
                     return False
         return True
@@ -798,11 +794,13 @@ class SymbolicReasoner:
         out: list[dict[str, str]] = []
         for pat in patterns:
             if isinstance(pat, dict):
-                out.append({
-                    "s": str(pat.get("s", "?s")),
-                    "p": str(pat.get("p", "?p")),
-                    "o": str(pat.get("o", "?o")),
-                })
+                out.append(
+                    {
+                        "s": str(pat.get("s", "?s")),
+                        "p": str(pat.get("p", "?p")),
+                        "o": str(pat.get("o", "?o")),
+                    }
+                )
             else:
                 # Try to coerce a Triple
                 try:
@@ -883,7 +881,9 @@ class SymbolicReasoner:
             except Exception:
                 pass
         # Fall back to clear + add_fact loop.
-        clear = getattr(self._datalog, "clear_derived", None) or getattr(self._datalog, "clear", None)
+        clear = getattr(self._datalog, "clear_derived", None) or getattr(
+            self._datalog, "clear", None
+        )
         if callable(clear):
             try:
                 clear()

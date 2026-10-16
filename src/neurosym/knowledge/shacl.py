@@ -120,13 +120,9 @@ class SHACLValidator:
             out.extend(self._check_node_kind(shape_str, shape, focus, focus_str))
             # Property shapes.
             for pshape in self._sg.objects(shape, SH.property):
-                out.extend(
-                    self._validate_property(shape_str, pshape, focus, focus_str)
-                )
+                out.extend(self._validate_property(shape_str, pshape, focus, focus_str))
             # Inline constraints directly on the node shape (no sh:path).
-            out.extend(
-                self._check_min_max(shape_str, shape, focus, focus_str, node_level=True)
-            )
+            out.extend(self._check_min_max(shape_str, shape, focus, focus_str, node_level=True))
         return out
 
     # ------------------------------------------------------------------
@@ -147,10 +143,7 @@ class SHACLValidator:
                         focus_node=focus_str,
                         constraint="sh:class",
                         value=focus_str,
-                        message=(
-                            f"Node {focus_str} is not of type "
-                            f"{self.kg._term_to_str(cls)}"
-                        ),
+                        message=(f"Node {focus_str} is not of type {self.kg._term_to_str(cls)}"),
                         shape=shape_str,
                         source_shape=shape_str,
                     )
@@ -173,8 +166,7 @@ class SHACLValidator:
                     constraint="sh:nodeKind",
                     value=focus_str,
                     message=(
-                        f"Node {focus_str} does not satisfy nodeKind "
-                        f"{self.kg._term_to_str(nk)}"
+                        f"Node {focus_str} does not satisfy nodeKind {self.kg._term_to_str(nk)}"
                     ),
                     shape=shape_str,
                     source_shape=shape_str,
@@ -197,13 +189,25 @@ class SHACLValidator:
         values = list(self._g.objects(focus, path))
         out.extend(
             self._check_min_max(
-                shape_str, pshape, focus, focus_str, node_level=False,
-                path=path, path_str=path_str, values=values,
+                shape_str,
+                pshape,
+                focus,
+                focus_str,
+                node_level=False,
+                path=path,
+                path_str=path_str,
+                values=values,
             )
         )
-        out.extend(self._check_datatype(shape_str, pshape, focus, focus_str, path, path_str, values))
+        out.extend(
+            self._check_datatype(shape_str, pshape, focus, focus_str, path, path_str, values)
+        )
         out.extend(self._check_class(shape_str, pshape, focus, focus_str, path, path_str, values))
-        out.extend(self._check_node_kind_property(shape_str, pshape, focus, focus_str, path, path_str, values))
+        out.extend(
+            self._check_node_kind_property(
+                shape_str, pshape, focus, focus_str, path, path_str, values
+            )
+        )
         return out
 
     def _check_min_max(
@@ -283,7 +287,11 @@ class SHACLValidator:
             if not isinstance(v, Literal):
                 out.append(
                     self._make_violation(
-                        shape_str, pshape, focus_str, path_str, v,
+                        shape_str,
+                        pshape,
+                        focus_str,
+                        path_str,
+                        v,
                         "sh:datatype",
                         f"Value {self.kg._term_to_str(v)} is not a literal of "
                         f"datatype {self.kg._term_to_str(dt)}",
@@ -293,7 +301,11 @@ class SHACLValidator:
             if v.datatype is None or str(v.datatype) != str(dt):
                 out.append(
                     self._make_violation(
-                        shape_str, pshape, focus_str, path_str, v,
+                        shape_str,
+                        pshape,
+                        focus_str,
+                        path_str,
+                        v,
                         "sh:datatype",
                         f"Value {self.kg._term_to_str(v)} has datatype "
                         f"{v.datatype or 'none'}, expected "
@@ -320,7 +332,12 @@ class SHACLValidator:
             if isinstance(v, Literal):
                 out.append(
                     self._make_violation(
-                        shape_str, pshape, focus_str, path_str, v, "sh:class",
+                        shape_str,
+                        pshape,
+                        focus_str,
+                        path_str,
+                        v,
+                        "sh:class",
                         f"Value {self.kg._term_to_str(v)} is a literal, expected "
                         f"an instance of {self.kg._term_to_str(cls)}",
                     )
@@ -329,7 +346,12 @@ class SHACLValidator:
             if (v, RDF.type, cls) not in self._g:
                 out.append(
                     self._make_violation(
-                        shape_str, pshape, focus_str, path_str, v, "sh:class",
+                        shape_str,
+                        pshape,
+                        focus_str,
+                        path_str,
+                        v,
+                        "sh:class",
                         f"Value {self.kg._term_to_str(v)} is not an instance of "
                         f"{self.kg._term_to_str(cls)}",
                     )
@@ -354,7 +376,12 @@ class SHACLValidator:
             if not self._node_kind_ok(v, nk):
                 out.append(
                     self._make_violation(
-                        shape_str, pshape, focus_str, path_str, v, "sh:nodeKind",
+                        shape_str,
+                        pshape,
+                        focus_str,
+                        path_str,
+                        v,
+                        "sh:nodeKind",
                         f"Value {self.kg._term_to_str(v)} does not satisfy nodeKind "
                         f"{self.kg._term_to_str(nk)}",
                     )

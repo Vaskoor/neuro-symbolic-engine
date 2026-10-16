@@ -174,9 +174,7 @@ class DatalogEngine:
         for fact in facts:
             b = self._match_pattern(first, fact, bindings)
             if b is not None:
-                results.extend(
-                    self._match_body(rest, facts, b, premises + [fact])
-                )
+                results.extend(self._match_body(rest, facts, b, premises + [fact]))
         return results
 
     def _subst(self, value: Optional[str], bindings: dict[str, str]) -> str:
@@ -258,9 +256,7 @@ class DatalogEngine:
         out.sort(key=lambda d: sorted(d.items()))
         return out
 
-    def query_conclusion(
-        self, pattern: dict[str, str], binding: dict[str, str]
-    ) -> Triple:
+    def query_conclusion(self, pattern: dict[str, str], binding: dict[str, str]) -> Triple:
         """Instantiate ``pattern`` with a binding to recover the matched triple."""
         return Triple(
             s=self._subst(pattern.get("s"), binding),

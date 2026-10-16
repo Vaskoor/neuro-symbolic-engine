@@ -48,7 +48,7 @@ except ImportError:  # pragma: no cover - fallback
 
 
 if TYPE_CHECKING:  # pragma: no cover
-    from neurosym.core.types import Triple as _Triple
+    pass
 
 
 # ---------------------------------------------------------------------------
@@ -69,7 +69,11 @@ def _triple_as_spo(triple: Any) -> tuple[str, str, str]:
     if hasattr(triple, "s") and hasattr(triple, "p") and hasattr(triple, "o"):
         return str(getattr(triple, "s")), str(getattr(triple, "p")), str(getattr(triple, "o"))
     if hasattr(triple, "subject") and hasattr(triple, "predicate") and hasattr(triple, "object"):
-        return str(getattr(triple, "subject")), str(getattr(triple, "predicate")), str(getattr(triple, "object"))
+        return (
+            str(getattr(triple, "subject")),
+            str(getattr(triple, "predicate")),
+            str(getattr(triple, "object")),
+        )
     raise TypeError(f"Cannot extract (s, p, o) from {type(triple).__name__!r}")
 
 
@@ -169,12 +173,8 @@ class TransEEmbedder:
         m = max(self.n_relations, 1)
         # Uniform [-1, 1] / sqrt(dim) initialisation (a common TransE choice).
         bound = 1.0 / np.sqrt(max(dim, 1))
-        self._entity_emb = self._rng.uniform(
-            -bound, bound, size=(n, dim)
-        ).astype(np.float64)
-        self._relation_emb = self._rng.uniform(
-            -bound, bound, size=(m, dim)
-        ).astype(np.float64)
+        self._entity_emb = self._rng.uniform(-bound, bound, size=(n, dim)).astype(np.float64)
+        self._relation_emb = self._rng.uniform(-bound, bound, size=(m, dim)).astype(np.float64)
         # L2-normalise embeddings (canonical TransE constraint).
         self._entity_emb = _l2_normalize(self._entity_emb)
         self._relation_emb = _l2_normalize(self._relation_emb)
@@ -310,7 +310,7 @@ class TransEEmbedder:
             self._relation_emb = _l2_normalize(self._relation_emb)
             if verbose and (epoch % 10 == 0 or epoch == epochs - 1):
                 avg = total_loss / max(n_examples, 1)
-                print(f"[TransE] epoch {epoch+1}/{epochs} loss={avg:.4f}", flush=True)
+                print(f"[TransE] epoch {epoch + 1}/{epochs} loss={avg:.4f}", flush=True)
 
         self._trained = True
         self._epochs_run = int(epochs)
@@ -350,18 +350,14 @@ class TransEEmbedder:
         """
         if not self._trained or self._entity_emb is None:
             return {}
-        return {
-            self._idx_to_entity[i]: self._entity_emb[i].copy()
-            for i in range(self.n_entities)
-        }
+        return {self._idx_to_entity[i]: self._entity_emb[i].copy() for i in range(self.n_entities)}
 
     def get_relation_embeddings(self) -> dict[str, np.ndarray]:
         """Return ``{relation_str: embedding_vector}`` for every known relation."""
         if not self._trained or self._relation_emb is None:
             return {}
         return {
-            self._idx_to_relation[i]: self._relation_emb[i].copy()
-            for i in range(self.n_relations)
+            self._idx_to_relation[i]: self._relation_emb[i].copy() for i in range(self.n_relations)
         }
 
     # ------------------------------------------------------------------
