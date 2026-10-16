@@ -39,7 +39,7 @@ import re
 from typing import TYPE_CHECKING, Any
 
 try:  # contract from sibling task ns-A
-    from neurosym.core.types import Query, QueryType, Triple
+    from neurosym.core.types import Query, QueryType, Triple  # noqa: F401
 except ImportError:  # pragma: no cover - fallback when ns-A not yet shipped
     # Reuse the canonical fallback defined in :mod:`neurosym.reasoning.proof`
     # so every reasoning submodule shares structurally-compatible model
