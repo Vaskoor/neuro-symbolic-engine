@@ -1,0 +1,108 @@
+# =============================================================================
+# Neuro-Symbolic Reasoning Engine — project metadata
+# Combining OWL, SHACL, Datalog, GNNs, and LLMs for Explainable Knowledge Inference
+# =============================================================================
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "neuro-symbolic-engine"
+version = "0.1.0"
+description = "Combining OWL, SHACL, Datalog, GNNs, and LLMs for Explainable Knowledge Inference"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Bhaskar Kaphle" }]
+requires-python = ">=3.11"
+keywords = [
+    "neuro-symbolic",
+    "knowledge-graph",
+    "datalog",
+    "owl",
+    "shacl",
+    "gnn",
+    "transe",
+    "llm",
+    "explainable-ai",
+    "reasoning",
+]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "rdflib>=7.0",
+    "numpy>=1.24",
+    "pydantic>=2.0",
+    "pyyaml>=6.0",
+    "fastapi>=0.110",
+    "uvicorn>=0.27",
+    "pytest>=7.4",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest-cov>=4.1",
+    "ruff>=0.1",
+    "black>=23.0",
+]
+neural = ["torch>=2.0"]
+llm = ["z-ai-web-dev-sdk>=0.1"]
+all = [
+    "torch>=2.0",
+    "z-ai-web-dev-sdk>=0.1",
+    "pytest-cov>=4.1",
+    "ruff>=0.1",
+    "black>=23.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/bhaskarkaphle/neuro-symbolic-engine"
+Repository = "https://github.com/bhaskarkaphle/neuro-symbolic-engine"
+Documentation = "https://github.com/bhaskarkaphle/neuro-symbolic-engine/blob/main/README.md"
+Issues = "https://github.com/bhaskarkaphle/neuro-symbolic-engine/issues"
+
+# --- src layout ---------------------------------------------------------------
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+neurosym = ["config/*.ttl", "config/*.yaml", "config/*.json"]
+
+# --- pytest ------------------------------------------------------------------
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers --tb=short"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "neural: marks tests requiring torch",
+    "llm: marks tests requiring LLM API key",
+    "network: marks tests requiring network access",
+    "e2e: end-to-end engine tests",
+]
+
+# --- ruff --------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM"]
+ignore = ["E501", "B008"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B011", "B017"]
+
+# --- black -------------------------------------------------------------------
+[tool.black]
+line-length = 100
+target-version = ["py311"]

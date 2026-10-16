@@ -1,0 +1,111 @@
+# SPDX-License-Identifier: MIT
+#
+# Datalog rules for the Scientific Research ontology.
+# ====================================================
+# Each rule is a Horn clause ``head :- body_1, body_2, ...`` where every
+# pattern is a ``{s, p, o}`` mapping. Terms beginning with ``?`` (e.g.
+# ``?x``) are Datalog variables; all other terms are constants that must
+# match the corresponding triple field exactly.
+#
+# Rules are evaluated in descending ``priority`` order within each fixpoint
+# iteration (ties keep insertion order). Transitive-closure rules
+# (transitive_cites, propagate_indirect_method) drive the engine to a
+# fixpoint across multiple iterations.
+#
+# Predicate prefixes (ex:) match the CURIEs emitted by the KnowledgeGraph
+# (see src/neurosym/knowledge/graph.py).
+
+rules:
+  # 1. A paper inherits the institution of each of its authors.
+  - name: derive_has_institution
+    description: "If paper X is authoredBy researcher Y and Y is affiliatedWith institution Z, then X hasInstitution Z."
+    priority: 90
+    body:
+      - {s: "?x", p: "ex:authoredBy", o: "?y"}
+      - {s: "?y", p: "ex:affiliatedWith", o: "?z"}
+    head: {s: "?x", p: "ex:hasInstitution", o: "?z"}
+
+  # 2. Employment implies institutional affiliation for the paper too.
+  - name: derive_has_institution_employed
+    description: "If paper X authoredBy researcher Y and Y employedBy institution Z, then X hasInstitution Z."
+    priority: 85
+    body:
+      - {s: "?x", p: "ex:authoredBy", o: "?y"}
+      - {s: "?y", p: "ex:employedBy", o: "?z"}
+    head: {s: "?x", p: "ex:hasInstitution", o: "?z"}
+
+  # 3. Methods propagate backwards along citation edges.
+  - name: derive_indirectly_uses_method
+    description: "If paper X cites paper Y and Y usesMethod method M, then X indirectlyUsesMethod M."
+    priority: 80
+    body:
+      - {s: "?x", p: "ex:cites", o: "?y"}
+      - {s: "?y", p: "ex:usesMethod", o: "?m"}
+    head: {s: "?x", p: "ex:indirectlyUsesMethod", o: "?m"}
+
+  # 4. A paper's field becomes its authors' working field.
+  - name: derive_researcher_field
+    description: "If paper X authoredBy researcher R and X belongsToField field F, then R worksInField F."
+    priority: 75
+    body:
+      - {s: "?x", p: "ex:authoredBy", o: "?r"}
+      - {s: "?x", p: "ex:belongsToField", o: "?f"}
+    head: {s: "?r", p: "ex:worksInField", o: "?f"}
+
+  # 5. Methods used by a paper are known by its authors.
+  - name: derive_method_expert
+    description: "If paper X authoredBy researcher R and X usesMethod method M, then R knowsMethod M."
+    priority: 72
+    body:
+      - {s: "?x", p: "ex:authoredBy", o: "?r"}
+      - {s: "?x", p: "ex:usesMethod", o: "?m"}
+    head: {s: "?r", p: "ex:knowsMethod", o: "?m"}
+
+  # 6. Top venues confer high-impact status on their papers.
+  - name: derive_high_impact
+    description: "If paper X publishedIn venue V and V isTopVenue 'true', then X isHighImpact 'true'."
+    priority: 70
+    body:
+      - {s: "?x", p: "ex:publishedIn", o: "?v"}
+      - {s: "?v", p: "ex:isTopVenue", o: "true"}
+    head: {s: "?x", p: "ex:isHighImpact", o: "true"}
+
+  # 7. High-impact papers boost their authors.
+  - name: derive_high_impact_researcher
+    description: "If paper P authoredBy researcher R and P isHighImpact 'true', then R hasHighImpactPaper 'true'."
+    priority: 65
+    body:
+      - {s: "?p", p: "ex:authoredBy", o: "?r"}
+      - {s: "?p", p: "ex:isHighImpact", o: "true"}
+    head: {s: "?r", p: "ex:hasHighImpactPaper", o: "true"}
+
+  # 8. Transitive propagation of indirect method usage up the citation graph.
+  - name: propagate_indirect_method
+    description: "If X cites Y and Y indirectlyUsesMethod M, then X indirectlyUsesMethod M (transitive propagation)."
+    priority: 60
+    body:
+      - {s: "?x", p: "ex:cites", o: "?y"}
+      - {s: "?y", p: "ex:indirectlyUsesMethod", o: "?m"}
+    head: {s: "?x", p: "ex:indirectlyUsesMethod", o: "?m"}
+
+  # 9. Two researchers sharing a method, linked by a citation between their
+  #    papers, are deemed collaborators.
+  - name: derive_collaborated
+    description: "If R1 and R2 both knowMethod M and R1's paper P1 cites R2's paper P2, then R1 collaboratedWith R2."
+    priority: 55
+    body:
+      - {s: "?r1", p: "ex:knowsMethod", o: "?m"}
+      - {s: "?r2", p: "ex:knowsMethod", o: "?m"}
+      - {s: "?p1", p: "ex:authoredBy", o: "?r1"}
+      - {s: "?p2", p: "ex:authoredBy", o: "?r2"}
+      - {s: "?p1", p: "ex:cites", o: "?p2"}
+    head: {s: "?r1", p: "ex:collaboratedWith", o: "?r2"}
+
+  # 10. Transitive closure of citation: X cites Y and Y cites Z => X cites Z.
+  - name: transitive_cites
+    description: "Transitive closure of citation: if X cites Y and Y cites Z, then X cites Z."
+    priority: 50
+    body:
+      - {s: "?x", p: "ex:cites", o: "?y"}
+      - {s: "?y", p: "ex:cites", o: "?z"}
+    head: {s: "?x", p: "ex:cites", o: "?z"}

@@ -1,0 +1,73 @@
+# =============================================================================
+# .gitignore — Neuro-Symbolic Reasoning Engine
+# =============================================================================
+
+# --- Python -----------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyd
+*.pyo
+
+# --- Virtual environments ---------------------------------------------------
+.venv/
+venv/
+env/
+ENV/
+.python-version
+
+# --- Distribution / packaging ----------------------------------------------
+build/
+dist/
+*.egg-info/
+*.egg
+MANIFEST
+
+# --- Coverage ---------------------------------------------------------------
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.tox/
+
+# --- Type / lint caches -----------------------------------------------------
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.black_cache/
+.dmypy.json
+
+# --- Environment / secrets -------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- IDE / editor -----------------------------------------------------------
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# --- Data + model artefacts (regenerable; do not commit) -------------------
+models/
+results/
+outputs/
+runs/
+data/raw/
+data/processed/
+
+# --- Notebooks -------------------------------------------------------------
+.ipynb_checkpoints/
+
+# --- Local logs ------------------------------------------------------------
+*.log
+logs/
+dev.log
+
+# --- Local config overrides ------------------------------------------------
+config/local.*

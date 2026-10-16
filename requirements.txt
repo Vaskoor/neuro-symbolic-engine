@@ -1,0 +1,25 @@
+# =============================================================================
+# Neuro-Symbolic Reasoning Engine — runtime + dev dependencies
+# =============================================================================
+# Core (required, pure-python, offline-installable):
+rdflib>=7.0
+numpy>=1.24
+pydantic>=2.0
+pyyaml>=6.0
+fastapi>=0.110
+uvicorn[standard]>=0.27
+pytest>=7.4
+pytest-cov>=4.1
+ruff>=0.1
+black>=23.0
+
+# --- Optional (uncomment to enable; NOT required for tests or API to run) -----
+
+# Native GNN training (PyTorch backend). When absent, GNNLinkPredictor
+# automatically falls back to a numpy implementation that produces identical
+# shapes + deterministic predictions for unit tests.
+# torch>=2.0
+
+# LLM bridge for natural-language query fallback. When absent, the engine
+# uses deterministic template-based fallbacks (no API key, no network).
+# z-ai-web-dev-sdk>=0.1

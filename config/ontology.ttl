@@ -1,0 +1,209 @@
+# SPDX-License-Identifier: MIT
+#
+# Scientific Research Ontology (Turtle, OWL DL)
+# ==============================================
+# A compact ontology describing the actors, artefacts and relationships of
+# scientific research: researchers, papers, institutions, fields, methods
+# and publication venues. Designed to exercise the Neuro-Symbolic Engine's
+# Datalog rules (see ../rules.yaml) and SHACL shapes.
+#
+# Namespace: ex = <http://example.org/sci#>
+
+@prefix ex:   <http://example.org/sci#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+
+# ---------------------------------------------------------------------------
+# Ontology header
+# ---------------------------------------------------------------------------
+ex:ScientificResearchOntology a owl:Ontology ;
+    rdfs:label "Scientific Research Ontology" ;
+    rdfs:comment "Researchers, papers, institutions, fields, methods and venues." .
+
+# ---------------------------------------------------------------------------
+# Classes (16 class declarations)
+# ---------------------------------------------------------------------------
+ex:Researcher       a owl:Class ; rdfs:label "Researcher" .
+ex:Author           a owl:Class ; rdfs:label "Author" .
+ex:Reviewer         a owl:Class ; rdfs:label "Reviewer" .
+ex:Paper            a owl:Class ; rdfs:label "Paper" .
+ex:ConferencePaper  a owl:Class ; rdfs:label "Conference Paper" .
+ex:JournalPaper     a owl:Class ; rdfs:label "Journal Paper" .
+ex:Institution      a owl:Class ; rdfs:label "Institution" .
+ex:University       a owl:Class ; rdfs:label "University" .
+ex:Company          a owl:Class ; rdfs:label "Company" .
+ex:Field            a owl:Class ; rdfs:label "Field" .
+ex:Method           a owl:Class ; rdfs:label "Method" .
+ex:Venue            a owl:Class ; rdfs:label "Venue" .
+ex:Journal          a owl:Class ; rdfs:label "Journal" .
+ex:Conference       a owl:Class ; rdfs:label "Conference" .
+ex:TopVenue         a owl:Class ; rdfs:label "Top Venue" .
+ex:Dataset          a owl:Class ; rdfs:label "Dataset" .
+
+# ---------------------------------------------------------------------------
+# Subclass hierarchy (8 subclass links)
+# ---------------------------------------------------------------------------
+ex:Author          rdfs:subClassOf ex:Researcher .
+ex:Reviewer        rdfs:subClassOf ex:Researcher .
+ex:ConferencePaper rdfs:subClassOf ex:Paper .
+ex:JournalPaper    rdfs:subClassOf ex:Paper .
+ex:University      rdfs:subClassOf ex:Institution .
+ex:Company         rdfs:subClassOf ex:Institution .
+ex:Journal         rdfs:subClassOf ex:Venue .
+ex:Conference      rdfs:subClassOf ex:Venue .
+ex:TopVenue        rdfs:subClassOf ex:Venue .
+
+# ---------------------------------------------------------------------------
+# Object properties (13 properties x {type, domain, range, label})
+# ---------------------------------------------------------------------------
+ex:authoredBy a owl:ObjectProperty ;
+    rdfs:domain ex:Paper ; rdfs:range ex:Researcher ; rdfs:label "authored by" .
+
+ex:affiliatedWith a owl:ObjectProperty ;
+    rdfs:domain ex:Researcher ; rdfs:range ex:Institution ; rdfs:label "affiliated with" .
+
+ex:employedBy a owl:ObjectProperty ;
+    rdfs:domain ex:Researcher ; rdfs:range ex:Institution ; rdfs:label "employed by" .
+
+ex:cites a owl:ObjectProperty ;
+    rdfs:domain ex:Paper ; rdfs:range ex:Paper ; rdfs:label "cites" .
+
+ex:publishedIn a owl:ObjectProperty ;
+    rdfs:domain ex:Paper ; rdfs:range ex:Venue ; rdfs:label "published in" .
+
+ex:usesMethod a owl:ObjectProperty ;
+    rdfs:domain ex:Paper ; rdfs:range ex:Method ; rdfs:label "uses method" .
+
+ex:belongsToField a owl:ObjectProperty ;
+    rdfs:domain ex:Paper ; rdfs:range ex:Field ; rdfs:label "belongs to field" .
+
+ex:hasInstitution a owl:ObjectProperty ;
+    rdfs:domain ex:Paper ; rdfs:range ex:Institution ; rdfs:label "has institution" .
+
+ex:indirectlyUsesMethod a owl:ObjectProperty ;
+    rdfs:domain ex:Paper ; rdfs:range ex:Method ; rdfs:label "indirectly uses method" .
+
+ex:supervisedBy a owl:ObjectProperty ;
+    rdfs:domain ex:Researcher ; rdfs:range ex:Researcher ; rdfs:label "supervised by" .
+
+ex:knowsMethod a owl:ObjectProperty ;
+    rdfs:domain ex:Researcher ; rdfs:range ex:Method ; rdfs:label "knows method" .
+
+ex:worksInField a owl:ObjectProperty ;
+    rdfs:domain ex:Researcher ; rdfs:range ex:Field ; rdfs:label "works in field" .
+
+ex:collaboratedWith a owl:ObjectProperty ;
+    rdfs:domain ex:Researcher ; rdfs:range ex:Researcher ; rdfs:label "collaborated with" .
+
+# ---------------------------------------------------------------------------
+# Datatype properties (8 properties x {type, domain, range})
+# ---------------------------------------------------------------------------
+ex:title a owl:DatatypeProperty ;
+    rdfs:domain ex:Paper ; rdfs:range xsd:string ; rdfs:label "title" .
+
+ex:year a owl:DatatypeProperty ;
+    rdfs:domain ex:Paper ; rdfs:range xsd:integer ; rdfs:label "year" .
+
+ex:hindex a owl:DatatypeProperty ;
+    rdfs:domain ex:Researcher ; rdfs:range xsd:integer ; rdfs:label "h-index" .
+
+ex:name a owl:DatatypeProperty ;
+    rdfs:range xsd:string ; rdfs:label "name" .
+
+ex:impactFactor a owl:DatatypeProperty ;
+    rdfs:domain ex:Venue ; rdfs:range xsd:decimal ; rdfs:label "impact factor" .
+
+ex:isTopVenue a owl:DatatypeProperty ;
+    rdfs:domain ex:Venue ; rdfs:range xsd:boolean ; rdfs:label "is top venue" .
+
+ex:isHighImpact a owl:DatatypeProperty ;
+    rdfs:domain ex:Paper ; rdfs:range xsd:boolean ; rdfs:label "is high impact" .
+
+ex:hasHighImpactPaper a owl:DatatypeProperty ;
+    rdfs:domain ex:Researcher ; rdfs:range xsd:boolean ; rdfs:label "has high-impact paper" .
+
+# ---------------------------------------------------------------------------
+# OWL restrictions (4 blank-node restrictions)
+# ---------------------------------------------------------------------------
+ex:Paper rdfs:subClassOf [
+    a owl:Restriction ;
+    owl:onProperty ex:authoredBy ;
+    owl:someValuesFrom ex:Researcher
+] .
+
+ex:Paper rdfs:subClassOf [
+    a owl:Restriction ;
+    owl:onProperty ex:publishedIn ;
+    owl:someValuesFrom ex:Venue
+] .
+
+ex:ConferencePaper rdfs:subClassOf [
+    a owl:Restriction ;
+    owl:onProperty ex:publishedIn ;
+    owl:allValuesFrom ex:Conference
+] .
+
+ex:JournalPaper rdfs:subClassOf [
+    a owl:Restriction ;
+    owl:onProperty ex:publishedIn ;
+    owl:allValuesFrom ex:Journal
+] .
+
+# ---------------------------------------------------------------------------
+# Disjointness axioms (3)
+# ---------------------------------------------------------------------------
+ex:University       owl:disjointWith ex:Company .
+ex:ConferencePaper  owl:disjointWith ex:JournalPaper .
+ex:Author           owl:disjointWith ex:Reviewer .
+
+# ---------------------------------------------------------------------------
+# SHACL shapes (sh:NodeShape + sh:property constraints)
+# ---------------------------------------------------------------------------
+# A Paper must have at least one author (ex:authoredBy), exactly one venue
+# (ex:publishedIn), and a string title.
+ex:PaperShape a sh:NodeShape ;
+    sh:targetClass ex:Paper ;
+    sh:property [
+        sh:path ex:authoredBy ;
+        sh:minCount 1 ;
+        sh:class ex:Researcher ;
+        sh:nodeKind sh:IRI ;
+    ] ;
+    sh:property [
+        sh:path ex:publishedIn ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:class ex:Venue ;
+        sh:nodeKind sh:IRI ;
+    ] ;
+    sh:property [
+        sh:path ex:title ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:nodeKind sh:Literal ;
+    ] .
+
+# A Researcher must be affiliated with at least one institution.
+ex:ResearcherShape a sh:NodeShape ;
+    sh:targetClass ex:Researcher ;
+    sh:property [
+        sh:path ex:affiliatedWith ;
+        sh:minCount 1 ;
+        sh:class ex:Institution ;
+        sh:nodeKind sh:IRI ;
+    ] .
+
+# A Venue flagged as a top venue must carry a boolean isTopVenue value.
+ex:TopVenueShape a sh:NodeShape ;
+    sh:targetClass ex:TopVenue ;
+    sh:property [
+        sh:path ex:isTopVenue ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:boolean ;
+        sh:nodeKind sh:Literal ;
+    ] .
