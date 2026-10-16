@@ -40,7 +40,7 @@ sys.path.insert(0, str(HERE.parent / "src"))
 # `neurosym.knowledge.datalog` (which imports `..core.types`).
 import pytest  # noqa: E402
 
-import neurosym.core  # noqa: F401
+import neurosym.core  # noqa: E402,F401
 
 # --- Module-under-test import; skip the whole file if unavailable -----------
 try:

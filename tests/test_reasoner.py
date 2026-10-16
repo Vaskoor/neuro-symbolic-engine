@@ -36,7 +36,7 @@ sys.path.insert(0, str(HERE.parent / "src"))
 # Force the correct import order to avoid a circular-import issue.
 import pytest  # noqa: E402
 
-import neurosym.core  # noqa: F401
+import neurosym.core  # noqa: E402,F401
 
 # --- Module-under-test import; skip the whole file if unavailable -----------
 try:

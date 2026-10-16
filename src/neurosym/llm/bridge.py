@@ -42,13 +42,13 @@ from typing import TYPE_CHECKING, Any, Mapping
 
 try:  # contract from sibling task ns-A
     from neurosym.core.types import (
-        ProofStep,
-        ProofTrace,
-        Query,
-        QueryType,
-        ReasoningResult,
-        Rule,
-        Triple,
+        ProofStep,  # noqa: F401
+        ProofTrace,  # noqa: F401
+        Query,  # noqa: F401
+        QueryType,  # noqa: F401
+        ReasoningResult,  # noqa: F401
+        Rule,  # noqa: F401
+        Triple,  # noqa: F401
     )
 except ImportError:  # pragma: no cover - fallback
     # Reuse the canonical fallback defined in the reasoning package so all

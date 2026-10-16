@@ -49,14 +49,14 @@ from .queries import QueryEngine, is_variable
 
 try:  # contract from sibling task ns-A
     from neurosym.core.types import (
-        ProofStep,
-        ProofTrace,
-        Query,
-        QueryType,
-        ReasoningResult,
-        Rule,
-        SourceLabel,
-        Triple,
+        ProofStep,  # noqa: F401
+        ProofTrace,  # noqa: F401
+        Query,  # noqa: F401
+        QueryType,  # noqa: F401
+        ReasoningResult,  # noqa: F401
+        Rule,  # noqa: F401
+        SourceLabel,  # noqa: F401
+        Triple,  # noqa: F401
     )
 except ImportError:  # pragma: no cover - fallback when ns-A not yet shipped
     # Reuse the canonical fallback defined in :mod:`neurosym.reasoning.proof`

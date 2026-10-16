@@ -38,7 +38,7 @@ sys.path.insert(0, str(HERE.parent / "src"))
 import numpy as np  # noqa: E402
 import pytest  # noqa: E402
 
-import neurosym.core  # noqa: F401  (correct import order)
+import neurosym.core  # noqa: E402,F401  (correct import order)
 
 # --- Module-under-test import; skip the whole file if unavailable -----------
 try:
