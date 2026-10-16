@@ -22,9 +22,9 @@ Public surface:
   (guarded); falls back to deterministic, seeded NL templates otherwise.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: F401
 
-from .bridge import LLMBridge
+from .bridge import LLMBridge  # noqa: F401
 
 __all__ = ["LLMBridge"]
 

@@ -24,10 +24,10 @@ reasoner's coercion layer fails (a known incompatibility with the
 MIT License — Copyright (c) 2024 Bhaskar Kaphle.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: F401
 
-import sys
-from pathlib import Path
+import sys  # noqa: F401
+from pathlib import Path  # noqa: F401
 
 # --- repo-local src layout bootstrap ---------------------------------------
 HERE = Path(__file__).resolve().parent
@@ -40,10 +40,10 @@ import neurosym.core  # noqa: F401
 
 # --- Module-under-test import; skip the whole file if unavailable -----------
 try:
-    from neurosym.core.types import ReasoningResult, Rule, Triple  # type: ignore
-    from neurosym.knowledge.datalog import DatalogEngine  # type: ignore
-    from neurosym.knowledge.graph import KnowledgeGraph  # type: ignore
-    from neurosym.reasoning.reasoner import SymbolicReasoner  # type: ignore
+    from neurosym.core.types import ReasoningResult, Rule, Triple  # type: ignore  # noqa: F401
+    from neurosym.knowledge.datalog import DatalogEngine  # type: ignore  # noqa: F401
+    from neurosym.knowledge.graph import KnowledgeGraph  # type: ignore  # noqa: F401
+    from neurosym.reasoning.reasoner import SymbolicReasoner  # type: ignore  # noqa: F401
 
     HAS_RS = True
     IMPORT_ERR: str | None = None
@@ -89,7 +89,7 @@ def reasoner() -> SymbolicReasoner:
         except AttributeError:
             # If SymbolicReasoner has no load_rules method, register rules
             # individually via add_rule.
-            import yaml
+            import yaml  # noqa: F401
 
             with open(BUNDLED_RULES, "r", encoding="utf-8") as fh:
                 data = yaml.safe_load(fh)

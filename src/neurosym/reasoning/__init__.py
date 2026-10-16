@@ -22,18 +22,18 @@ Public surface:
     * :class:`QueryEngine`          - NL/SPARQL/Datalog pattern translation.
 
 The submodules import types from :mod:`neurosym.core.types` and engine classes
-from :mod:`neurosym.knowledge.graph` / :mod:`neurosym.knowledge.datalog`. Those
+from :mod:`neurosym.knowledge.graph` / :mod:`neurosym.knowledge.datalog`. Those  # noqa: F401
 contracts are authored by the parallel ``ns-A`` task. When those modules are not
 yet present at import time, lightweight fallback aliases (pydantic models with
 the same shape) are defined in each submodule so the package remains importable
 in isolation.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: F401
 
-from .proof import ProofBuilder, format_proof
-from .queries import QueryEngine
-from .reasoner import SymbolicReasoner
+from .proof import ProofBuilder, format_proof  # noqa: F401
+from .queries import QueryEngine  # noqa: F401
+from .reasoner import SymbolicReasoner  # noqa: F401
 
 __all__ = [
     "SymbolicReasoner",

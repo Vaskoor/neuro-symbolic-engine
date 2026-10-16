@@ -22,10 +22,10 @@ core `neurosym.knowledge.graph` module is not yet wired.
 MIT License — Copyright (c) 2024 Bhaskar Kaphle.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: F401
 
-import sys
-from pathlib import Path
+import sys  # noqa: F401
+from pathlib import Path  # noqa: F401
 
 # --- repo-local src layout bootstrap ---------------------------------------
 HERE = Path(__file__).resolve().parent
@@ -40,8 +40,8 @@ import neurosym.core  # noqa: F401  (registers the partial package)
 
 # --- Module-under-test import; skip the whole file if unavailable -----------
 try:
-    from neurosym.core.types import Triple  # type: ignore
-    from neurosym.knowledge.graph import KnowledgeGraph  # type: ignore
+    from neurosym.core.types import Triple  # type: ignore  # noqa: F401
+    from neurosym.knowledge.graph import KnowledgeGraph  # type: ignore  # noqa: F401
 
     HAS_KG = True
     IMPORT_ERR: str | None = None

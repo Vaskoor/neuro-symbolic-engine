@@ -24,12 +24,12 @@ neural and LLM stages so no external dependencies are required.
 MIT License — Copyright (c) 2024 Bhaskar Kaphle.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: F401
 
-import asyncio
-import sys
-from pathlib import Path
-from typing import Any
+import asyncio  # noqa: F401
+import sys  # noqa: F401
+from pathlib import Path  # noqa: F401
+from typing import Any  # noqa: F401
 
 # --- repo-local src layout bootstrap ---------------------------------------
 HERE = Path(__file__).resolve().parent
@@ -41,9 +41,9 @@ import neurosym.core  # noqa: F401  (correct import order)
 
 # --- Module-under-test import; skip the whole file if unavailable -----------
 try:
-    from neurosym.core.config import DatalogConfig, EngineConfig, KGConfig  # type: ignore
-    from neurosym.core.engine import NeuroSymbolicEngine  # type: ignore
-    from neurosym.core.types import ProofTrace, Query, QueryType, ReasoningResult, Triple  # type: ignore
+    from neurosym.core.config import DatalogConfig, EngineConfig, KGConfig  # type: ignore  # noqa: F401
+    from neurosym.core.engine import NeuroSymbolicEngine  # type: ignore  # noqa: F401
+    from neurosym.core.types import ProofTrace, Query, QueryType, ReasoningResult, Triple  # type: ignore  # noqa: F401
 
     HAS_ENG = True
     IMPORT_ERR: str | None = None

@@ -25,10 +25,10 @@ Public surface:
 Both components are fully deterministic — seeded PRNGs and no I/O.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: F401
 
-from .embeddings import TransEEmbedder
-from .gnn import GNNLinkPredictor
+from .embeddings import TransEEmbedder  # noqa: F401
+from .gnn import GNNLinkPredictor  # noqa: F401
 
 __all__ = ["GNNLinkPredictor", "TransEEmbedder"]
 

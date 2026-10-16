@@ -6,15 +6,15 @@ helpers. The :class:`NeuroSymbolicEngine` is imported last because it depends
 on the :mod:`neurosym.knowledge` subsystem.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: F401
 
-from .config import EngineConfig, load_config
+from .config import EngineConfig, load_config  # noqa: F401
 
 # The engine depends on the knowledge subsystem; import it last so that the
 # contract objects above remain available even if a heavyweight optional
 # dependency were missing.
-from .engine import NeuroSymbolicEngine
-from .types import (
+from .engine import NeuroSymbolicEngine  # noqa: F401
+from .types import (  # noqa: F401
     ProofStep,
     ProofTrace,
     Query,
